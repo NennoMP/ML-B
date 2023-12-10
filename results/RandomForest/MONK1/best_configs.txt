@@ -1,0 +1,2 @@
+1: {'config': {'n_estimators': 50}, 'Mean score': 0.8957, 'Std score': 0.0595}
+2: {'config': {'n_estimators': 25}, 'Mean score': 0.8953, 'Std score': 0.054}
