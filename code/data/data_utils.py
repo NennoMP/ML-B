@@ -1,5 +1,4 @@
 import os
-from typing import Tuple
 
 import numpy as np
 import pandas as pd
@@ -14,7 +13,7 @@ CUP_HEADER = ['ID','a1','a2','a3','a4','a5','a6', 'a7', 'a8', 'a9', 'a10', 'clas
 ######################################
 # MONK UTILS
 ######################################
-def load_monk(dev_path: str, test_path: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: 
+def load_monk(dev_path: str, test_path: str) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
     Utility function to load a monk's problem train and test dataset. Returns the train and test
     attributes (one-hot encoding) and labels.
@@ -72,7 +71,7 @@ def store_monk_result(out_dir: str, best_configs: dict, test_report: str):
 ######################################
 # CUP UTILS
 ######################################
-def load_cup(dev_path: str, test_path: str) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: 
+def load_cup(dev_path: str, test_path: str) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: 
     """
     Utility function to load CUP train and test dataset. Returns the train attributes and labels, 
     and the test attributes.
