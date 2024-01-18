@@ -22,25 +22,40 @@ class Solver(object):
     val loss, train accuracy, and val accuracy are also memorized.
     """
     
-    def __init__(self, model, train_data, train_labels, val_data, val_labels, **kwargs):
+    def __init__(self, model: any, x_train: np.ndarray, y_train: np.ndarray, x_val=None, y_val=None, target='accuracy', **kwargs):
         """
         Construct a new Solver instance.
 
         Args:
         - model: a model object
 
-        - train_data: training data
-        - train_labels: training gtc labels
+        - x_train: training data
+        - y_train: training gtc labels
         
-        - val_data: validation data
-        - val_labels: validation gtc labels
+        - x_val: validation data
+        - y_val: validation gtc labels
         """
         
         self.model = model
-        self.train_data = train_data
-        self.train_labels = train_labels
-        self.val_data = val_data
-        self.val_labels = val_labels
+        self.x_train = x_train
+        self.y_train = y_train
+        self.x_val = x_val
+        self.y_val = y_val
+        self.validation_data = None
+        
+        
+        if target == 'loss' or target == 'mean_euclidean_error':
+            self.mode = 'min'
+        elif target == 'accuracy':
+            self.mode = 'max'
+        else:
+            raise ValueError("Unknown <target> parameter, can only be 'loss', 'accuracy', or 'mean_euclidean_error'!")
+        
+        self.target = target
+        
+        if self.x_val is not None:
+            self.validation_data = (self.x_val, self.y_val)
+        
         self._reset()
     
     def _reset(self):
@@ -55,36 +70,34 @@ class Solver(object):
         self.train_loss_history = []
         self.val_loss_history = []
         
-        # Record accuracy history
-        self.train_accuracy_history = []
-        self.val_accuracy_history = []
+        # Record metric history
+        self.train_metric_history = []
+        self.val_metric_history = []
         
     def plot_history(self, out_path: str):
         epochs = list(range(1, len(self.train_loss_history) + 1))
 
         plt.figure(figsize=(12, 5))
 
-        # Plotting BCE losses
+        # Plotting MSE losses
         ax1 = plt.subplot(1, 2, 1)  # 1 row, 2 columns, 1st subplot = Losses
         ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
-        ax1.plot(epochs, self.train_loss_history, label='Training', marker='o')
-        ax1.plot(epochs, self.val_loss_history, label='Validation', marker='o')
-        ax1.set_title('BCE losses')
+        ax1.plot(epochs, self.train_loss_history, label='Training', linestyle='--')
+        ax1.plot(epochs, self.val_loss_history, label='Validation', linestyle='--')
         ax1.set_xlabel('Epoch')
-        ax1.set_ylabel('Loss')
+        ax1.set_ylabel('MSE')
         ax1.legend()
         ax1.spines['top'].set_visible(False)
         ax1.spines['right'].set_visible(False)
         ax1.grid(True, which='both', linestyle='--', linewidth=0.5)
         
-        # Plotting accuracy
-        ax2 = plt.subplot(1, 2, 2)  # 1 row, 2 columns, 2nd subplot = accuracy
+        # Plotting metric (MEE)
+        ax2 = plt.subplot(1, 2, 2)  # 1 row, 2 columns, 2nd subplot = metric
         ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
-        ax2.plot(epochs, self.train_accuracy_history, label='Trainining', marker='o')
-        ax2.plot(epochs, self.val_accuracy_history, label='Validation', marker='o')
-        #ax2.set_title('Accuracy')
+        ax2.plot(epochs, self.train_metric_history, label='Trainining', linestyle='--')
+        ax2.plot(epochs, self.val_metric_history, label='Validation', linestyle='--')
         ax2.set_xlabel('Epoch')
-        ax2.set_ylabel('Accuracy')
+        ax2.set_ylabel('MEE')
         ax2.legend()
         ax2.spines['top'].set_visible(False)
         ax2.spines['right'].set_visible(False)
@@ -97,30 +110,50 @@ class Solver(object):
     def train(self, epochs=50, batch_size=32, patience=None):
         """
         Run optimization to train the model.
-        """
         
-        callbacks = [CustomPrintCallback(epochs=epochs)]
+        Args:
+            epochs: number of epochs for training
+            batch_size: size of the batch
+            
+        Optional:
+            patience: nummber of epochs to wait for improvement before stopping
+        """
+    
+            
+        callbacks = []
         
         if patience:
-            early_stopping = CustomBestEarlyStopping(monitor='val_accuracy', patience=patience, mode='max', verbose=1, restore_best_weights=True)
+            early_stopping = CustomBestEarlyStopping(monitor=f'val_{self.target}', patience=patience, mode=self.mode, verbose=1, restore_best_weights=True)
             callbacks.append(early_stopping)
 
-        history = self.model.fit(self.train_data, self.train_labels,
-                                 validation_data=(self.val_data, self.val_labels),
-                                 epochs=epochs, batch_size=batch_size, callbacks=callbacks, verbose=0)
+        history = self.model.fit(self.x_train, self.y_train,
+                                 validation_data=self.validation_data,
+                                 epochs=epochs, batch_size=batch_size, callbacks=callbacks, shuffle=True, verbose=1)
         
         # Record loss history
         self.train_loss_history = history.history['loss']
-        self.val_loss_history = history.history['val_loss']
+        self.val_loss_history = history.history.get('val_loss', [])
         
-        # Record accuracy history
-        self.train_accuracy_history = history.history['accuracy']
-        self.val_accuracy_history = history.history['val_accuracy']
+        # Record metric history
+        self.train_metric_history = history.history[self.target]
+        self.val_metric_history = history.history.get(f'val_{self.target}', [])
         
-        best_accuracy_idx = np.argmax(self.val_accuracy_history)
-        self.best_model_stats = {'val_loss': self.val_loss_history[best_accuracy_idx],
-                                 'train_loss': self.train_loss_history[best_accuracy_idx],
-                                 'val_accuracy': self.val_accuracy_history[best_accuracy_idx],
-                                 'accuracy': self.train_accuracy_history[best_accuracy_idx]}
         
-        print(f"Best validation accuracy: {self.best_model_stats['val_accuracy']}")
+        if self.x_val is None:
+            best_metric_idx = np.argmax(self.train_metric_history) if self.mode == 'max' else np.argmin(self.train_metric_history)
+        else:
+            best_metric_idx = np.argmax(self.val_metric_history) if self.mode == 'max' else np.argmin(self.val_metric_history)
+            
+        
+        self.best_model_stats = {
+            'loss': self.train_loss_history[best_metric_idx],
+            self.target: self.train_metric_history[best_metric_idx]
+        }
+
+        if self.x_val is not None:
+            self.best_model_stats.update({
+                'val_loss': self.val_loss_history[best_metric_idx],
+                f'val_{self.target}': self.val_metric_history[best_metric_idx]
+            })
+        
+        print(f"Best (val) {self.target}: {self.best_model_stats[f'val_{self.target}']}")

@@ -1,0 +1,4 @@
+lr: 0.1
+h_dim: 16
+activation: relu
+reg: 0

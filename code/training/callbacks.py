@@ -9,7 +9,10 @@ class CustomPrintCallback(Callback):
         self.epochs = epochs
     
     def on_epoch_end(self, epoch, logs=None):
-        print(f"\nEpoch {epoch+1}/{self.epochs} - loss: {logs['loss']:.4f} - accuracy: {logs['accuracy']:.4f} - val_loss: {logs['val_loss']:.4f} - val_accuracy: {logs['val_accuracy']:.4f}\n")
+        if 'val_accuracy' in logs:
+            print(f"\nEpoch {epoch+1}/{self.epochs} - loss: {logs['loss']:.4f} - accuracy: {logs['accuracy']:.4f} - val_loss: {logs['val_loss']:.4f} - val_accuracy: {logs['val_accuracy']:.4f}\n")
+        else:
+            print(f"\nEpoch {epoch+1}/{self.epochs} - loss: {logs['loss']:.4f} - accuracy: {logs['accuracy']:.4f}\n")
 
 
 class CustomBestEarlyStopping(EarlyStopping):

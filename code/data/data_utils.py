@@ -1,3 +1,4 @@
+import json
 import os
 
 import numpy as np
@@ -43,7 +44,7 @@ def load_monk(dev_path: str, test_path: str) -> tuple[np.ndarray, np.ndarray, np
     
     return x_dev, y_dev, x_test, y_test
 
-def store_monk_result(out_dir: str, best_configs: dict, test_report: str):
+def store_monk_result(out_dir: str, config, dev_report, test_report):
     """
     Utility function to store the final results (i.e., best configurations and test performance)
     of a model w.r.t. a monk's problem.
@@ -59,13 +60,17 @@ def store_monk_result(out_dir: str, best_configs: dict, test_report: str):
         os.makedirs(out_dir)
     
     # Writing best_config to a file
-    with open(out_dir + 'best_configs.txt', 'w') as outf:
-        for key, value in best_configs.items():
+    with open(out_dir + 'config.txt', 'w') as outf:
+        for key, value in config.items():
             outf.write(f"{key}: {value}\n")
 
+    # Writing dev_report to a file
+    with open(out_dir + 'dev_report.txt', 'w') as outf:
+        outf.write(str(dev_report))
+            
     # Writing test_report to a file
     with open(out_dir + 'test_report.txt', 'w') as outf:
-        outf.write(test_report)
+        outf.write(str(test_report))
         
 
 ######################################
@@ -102,7 +107,7 @@ def load_cup(dev_path: str, test_path: str) -> tuple[np.ndarray, np.ndarray, np.
 
 
 
-def store_cup_result(out_dir: str, best_configs: dict, dev_mee: float, test_preds: np.ndarray):
+def store_cup_result(out_dir: str, report: dict, blind_test_preds: np.ndarray):
     """
     Utility function to store the final results (i.e., best configurations and test performance)
     of a model w.r.t. CUP.
@@ -117,17 +122,18 @@ def store_cup_result(out_dir: str, best_configs: dict, dev_mee: float, test_pred
     # Check if the directory exists, create it if not
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
-    
-    # Writing best_config to a file
-    with open(out_dir + 'best_configs.txt', 'w') as outf:
-        for key, value in best_configs.items():
-            outf.write(f"{key}: {value}\n")
 
-    # Writing dev MEE to a file
-    with open(out_dir + 'dev_mee.txt', 'w') as outf:
-        outf.write(str(dev_mee))
+    # Writing train-val-test report
+    with open(out_dir + 'report.json', 'w') as outf:
+        json.dump(report, outf, indent=4)
             
-    # Writing test predictions to a file
-    with open(out_dir + 'test_preds.txt', 'w') as outf:
-        for pred in test_preds:
-            outf.write(" ".join(map(str, pred)) + "\n")
+    with open(out_dir + 'test_preds.csv', 'w') as outf:
+        # Team Info
+        outf.write("# Matteo Pinna, Leonardo Caridi, Marco Sanna\n")
+        outf.write("# ACD-TEAM\n")
+        outf.write("# ML-CUP23 v2\n")
+        outf.write("# 20/01/2023\n")
+
+        # Writing predictions
+        for i, pred in enumerate(blind_test_preds, 1):
+            outf.write(f"{i},{','.join(map(str, pred))}\n")
