@@ -28,4 +28,4 @@ def grid_search_top_configs(results, top=5):
             'Std score': round(results['std_test_score'][candidate], 4)
         }
         
-    return best_configs
+    return best_configs, candidates
