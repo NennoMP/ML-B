@@ -1,0 +1,11 @@
+{
+    "lr": 0.01,
+    "n_layers": 1,
+    "h_dim": 32,
+    "activation": "ReLU",
+    "reg": 0.01,
+    "momentum": 0.1,
+    "batch_size": 1000,
+    "mean_euclidean_error": 9.428937435150146,
+    "std_dev": 0.7883706092834473
+}

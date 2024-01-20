@@ -4,6 +4,7 @@ import numpy as np
 
 from itertools import product
 from math import log10
+from sklearn.model_selection import KFold
 
 from training.solver import Solver
 
@@ -11,52 +12,85 @@ from training.solver import Solver
 ALLOWED_RANDOM_SEARCH_PARAMS = ['log', 'int', 'float', 'item']
 
 
-def findBestConfig(model_fn, train_data, train_labels, val_data, val_labels, configs, TARGET, EPOCHS, PATIENCE):
+def findBestConfig(model_fn, train_data, val_data, configs, target, n_splits, epochs, patience):
     """
-    Get a list of hyperparameter configs for grid/random search, trains a model on all configs 
-    and returns the one performing best on validation set according to specific TARGET metric.
-    """
+    Trains a model using K-Fold cross-validation for a set of configurations
+    and returns the best model based on the mean performance across folds.
+    
+    Required arguments:
+        - model_fn: a function returning a model object
 
-    if TARGET == 'loss' or TARGET == 'mean_euclidean_error':
+        - train_data: training data pairs (samples, labels)
+        - val_data: validation data pairs (samples, labels)
+            
+        - configs: a set of hparams configurations to test
+    
+    Optional arguments:
+        - TARGET: target metric for optimization. Allowed choices are 'loss' or 'accuracy'
+        - EPOCHS: number of epochs each model will be trained on
+        - PATIENCE: when to stop early the training process
+    
+    """
+    if target == 'loss' or target == 'mean_euclidean_error':
         mode = 'min'
         best_target = float('inf')
-    elif TARGET == 'accuracy':
+    elif target == 'accuracy':
         mode = 'max'
         best_target = float('-inf')
     else:
-        raise ValueError(f"Unsupported TARGET value: {TARGET}. Try 'loss', 'accuracy' or 'mean_euclidean_error'!'")
+        raise ValueError(f"Unsupported TARGET value: {target}. Try 'loss', 'accuracy' or 'mean_euclidean_error'!'")
     
     best_config = None
+    std_dev = None
     best_model = None
     results = []
-    
-    for i in range(len(configs)):
-        print("\nEvaluating Config #{} [of {}]:\n".format((i+1), len(configs)), configs[i])
-        
-        print(type(configs[i]['batch_size']))
-        
-        model = model_fn(configs[i])
-        solver = Solver(model, train_data, train_labels, val_data, val_labels, TARGET, **configs[i])
-        solver.train(epochs=EPOCHS, patience=PATIENCE, batch_size=configs[i]['batch_size'])
-        results.append(solver.best_model_stats)
-        
-        if mode == 'max':
-            if solver.best_model_stats[f'val_{TARGET}'] > best_target:
-                best_target, best_model, best_config = solver.best_model_stats[f'val_{TARGET}'], model, configs[i]
-        else:
-            if solver.best_model_stats[f'val_{TARGET}'] < best_target:
-                best_target, best_model, best_config = solver.best_model_stats[f'val_{TARGET}'], model, configs[i]
+   
+    # Merge training and validation data
+    x_dev = np.concatenate((train_data[0], val_data[0]), axis=0)
+    y_dev = np.concatenate((train_data[1], val_data[1]), axis=0)
 
-    print(f"\nSearch done. Best (val) {f'val_{TARGET}'} = {best_target}")
+    kf = KFold(n_splits=n_splits, shuffle=True, random_state=128)
+    for i in range(len(configs)):
+        print(f"Evaluating Config #{i+1} [of {len(configs)}]: {configs[i]}\n")
+
+        # Initialize variables for mean metric calculation across folds
+        fold_count = 0
+        fold_metrics = []  # List to store metrics of each fold
+
+        for train_idx, val_idx in kf.split(x_dev):
+            print(f"Evaluating Fold #{fold_count} [of {n_splits}]:\n")
+            
+            fold_train_data, fold_val_data = x_dev[train_idx], x_dev[val_idx]
+            fold_train_labels, fold_val_labels = y_dev[train_idx], y_dev[val_idx]
+            
+            model = model_fn(configs[i])
+            solver = Solver(model, fold_train_data, fold_train_labels, fold_val_data, fold_val_labels, target, **configs[i])
+            solver.train(epochs=epochs, patience=patience, batch_size=configs[i]['batch_size'])
+            
+            fold_metrics.append(solver.best_model_stats[f'val_{target}'])
+            fold_count += 1
+
+        mean_metric = np.mean(fold_metrics) # mean
+        std_dev_metric = np.std(fold_metrics) # std dev.
+        results.append((mean_metric, std_dev_metric))
+
+        # Update best config/model if current mean metric is better
+        if (mode == 'max' and mean_metric > best_target) or (mode == 'min' and mean_metric < best_target):
+            std_dev = std_dev_metric
+            best_target, best_model, best_config = mean_metric, model, configs[i]
+            best_config[target], best_config['std_dev'] = mean_metric, std_dev
+
+    print(f"\nSearch done. Best mean score {f'val_{target}'}: {best_target} - std dev: {std_dev}")
     print("Best Config:", best_config)
+
     return best_model, best_config, list(zip(configs, results))
 
 
 ######################################
 # GRID SEARCH
 ######################################
-def grid_search(model_fn, train_data, train_labels, val_data, val_labels,
-                grid_search_spaces, TARGET, EPOCHS=100, PATIENCE=50):
+def grid_search(model_fn, train_data, val_data,
+    grid_search_spaces, target, N_SPLITS=5, EPOCHS=100, PATIENCE=50):
     """
     A simple grid search based on nested loops to tune learning rate and
     regularization strengths.
@@ -66,17 +100,15 @@ def grid_search(model_fn, train_data, train_labels, val_data, val_labels,
     Required arguments:
         - model_fn: a function returning a model object
 
-        - train_data: training data
-        - train_labels: training gtc labels
-        
-        - val_data: validation data
-        - val_labels: validation gtc labels
+        - train_data: training data (samples, labels)
+        - val_data: validation data (samples, labels)
             
         - grid_search_spaces: a dictionary where every key corresponds to a
-            to-tune-hyperparameter and every value contains an interval or 
-            a list of possible values to test.
+            to-tune-hyperparameter and every value contains an interval of 
+            possible values to test.
     
     Optional arguments:
+        - N_SPLITS: number of splits for kfold cross-validation
         - TARGET: target metric for optimization. Allowed choices are 'loss' or 'accuracy'
         - EPOCHS: number of epochs each model will be trained on
         - PATIENCE: when to stop early the training process
@@ -87,8 +119,8 @@ def grid_search(model_fn, train_data, train_labels, val_data, val_labels,
     for instance in product(*grid_search_spaces.values()):
         configs.append(dict(zip(grid_search_spaces.keys(), instance)))
 
-    return findBestConfig(model_fn, train_data, train_labels, val_data, val_labels,
-                          configs, TARGET, EPOCHS, PATIENCE)
+    return findBestConfig(model_fn, train_data, val_data,
+                          configs, target, N_SPLITS, EPOCHS, PATIENCE)
 
 def tuning_search_top_configs(results, top=5):
     """"
@@ -158,8 +190,9 @@ def sample_hparams_spaces(search_spaces, trial=None):
 
     return config
 
-def random_search(model_fn, train_data, train_labels, val_data, val_labels, 
-                  random_search_spaces, TARGET='val_loss', NUM_SEARCH=20, EPOCHS=30, PATIENCE=5):
+def random_search(model_fn, train_data, val_data, 
+                  random_search_spaces, target, 
+                  N_SPLITS=5, NUM_SEARCH=20, EPOCHS=30, PATIENCE=5):
     """
     Samples NUM_SEARCH hyper parameter sets within the provided search spaces
     and returns the best model.
@@ -167,17 +200,14 @@ def random_search(model_fn, train_data, train_labels, val_data, val_labels,
     Required arguments:
         - model_fn: a function returning a model object
 
-        - train_data: training data
-        - train_labels: training gtc labels
-        
-        - val_data: validation data
-        - val_labels: validation gtc labels
+        - train_data: training data (samples, labels)
+        - val_data: validation data (samples, labels)
             
         - random_search_spaces: a dictionary where every key corresponds to a
-            to-tune-hyperparameter and every value contains an interval or a list of possible
-            values to test.
+            to-tune-hyperparameter and every value contains an interval of possible values to test.
     
     Optional arguments:
+        - N_SPLITS: number of splits for kfold cross-validation
         - TARGET: target metric for optimization. Allowed choices are 'val_loss' or 'val_avg_f1'
         - NUM_SEARCH: number of configurations to test
         - EPOCHS: number of epochs each model will be trained on
@@ -188,4 +218,4 @@ def random_search(model_fn, train_data, train_labels, val_data, val_labels,
     for _ in range(NUM_SEARCH):
         configs.append(sample_hparams_spaces(random_search_spaces))
 
-    return findBestConfig(model_fn, train_data, train_labels, val_data, val_labels, configs, TARGET, EPOCHS, PATIENCE)
+    return findBestConfig(model_fn, train_data, val_data, configs, target, N_SPLITS, EPOCHS, PATIENCE)
