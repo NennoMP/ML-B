@@ -44,15 +44,16 @@ def load_monk(dev_path: str, test_path: str) -> tuple[np.ndarray, np.ndarray, np
     
     return x_dev, y_dev, x_test, y_test
 
-def store_monk_result(out_dir: str, config, dev_report, test_report):
+
+def store_monk_result(out_dir: str, config: dict, report: dict):
     """
     Utility function to store the final results (i.e., best configurations and test performance)
     of a model w.r.t. a monk's problem.
     
     Required arguments:
-        - out_path: output directory
-        - best_configs: dictionary containing the best configurations and their results
-        - test_report: classification report on the test set
+        - out_dir: output directory
+        - config: hparams final configuration
+        - report: loss and accuracy report for dev-test
     """
     
     # Check if the directory exists, create it if not
@@ -60,17 +61,12 @@ def store_monk_result(out_dir: str, config, dev_report, test_report):
         os.makedirs(out_dir)
     
     # Writing best_config to a file
-    with open(out_dir + 'config.txt', 'w') as outf:
-        for key, value in config.items():
-            outf.write(f"{key}: {value}\n")
+    with open(out_dir + 'config.json', 'w') as outf:
+        json.dump(config, outf, indent=4)
 
-    # Writing dev_report to a file
-    with open(out_dir + 'dev_report.txt', 'w') as outf:
-        outf.write(str(dev_report))
-            
-    # Writing test_report to a file
-    with open(out_dir + 'test_report.txt', 'w') as outf:
-        outf.write(str(test_report))
+    # Writing dev-test report
+    with open(out_dir + 'report.json', 'w') as outf:
+        json.dump(report, outf, indent=4)
         
 
 ######################################
@@ -107,23 +103,28 @@ def load_cup(dev_path: str, test_path: str) -> tuple[np.ndarray, np.ndarray, np.
 
 
 
-def store_cup_result(out_dir: str, report: dict, blind_test_preds: np.ndarray):
+def store_cup_result(out_dir: str, config: dict, report: dict, blind_test_preds: np.ndarray):
     """
     Utility function to store the final results (i.e., best configurations and test performance)
     of a model w.r.t. CUP.
     
     Required arguments:
-        - out_path: output directory
-        - best_configs: dictionary containing the best configurations and their results
-        - dev_mee: MEE score on development data
-        - test_preds: CUP blind test set predictions
+        Required arguments:
+        - out_dir: output directory
+        - config: hparams final configuration
+        - report: MSE and MEE report for train-val-internal test
+        - blind_test_preds: predictions for the blind test
     """
     
     # Check if the directory exists, create it if not
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
+        
+    # Writing best_config to a file
+    with open(out_dir + 'config.json', 'w') as outf:
+        json.dump(config, outf, indent=4)
 
-    # Writing train-val-test report
+    # Writing train-val-internal test report
     with open(out_dir + 'report.json', 'w') as outf:
         json.dump(report, outf, indent=4)
             

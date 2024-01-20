@@ -1,2 +1,0 @@
-1: {'config': {'criterion': 'squared_error', 'n_estimators': 50}, 'Mean score': -2.81, 'Std score': 0.1029}
-2: {'config': {'criterion': 'squared_error', 'n_estimators': 25}, 'Mean score': -2.9461, 'Std score': 0.1228}

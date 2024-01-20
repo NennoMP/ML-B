@@ -90,13 +90,13 @@ def grid_search(model_fn, train_data, train_labels, val_data, val_labels,
     return findBestConfig(model_fn, train_data, train_labels, val_data, val_labels,
                           configs, TARGET, EPOCHS, PATIENCE)
 
-def grid_search_top_configs(results, top=5):
+def tuning_search_top_configs(results, top=5):
     """"
-    Utility function to print a report for the top <top> results of a GridSearchCV the results of a GridSearchCV. 
+    Utility function to print a report for the top <top> results of a GridSearchCV the results of a GridSearchCV or RandomSearchCV. 
     Returns a dictionary with the <top> configurations and their results.
     
     Required arguments:
-    - results: a GridSearchCV.cv_results_ instance containing the grid search results
+    - results: a GridSearchCV.cv_results_ (or RandomSearchCV) instance containing the grid search results
     
     Optional arguments:
     - top: the best configurations to store/print

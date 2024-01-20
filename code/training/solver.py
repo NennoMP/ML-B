@@ -8,6 +8,10 @@ from sklearn.model_selection import StratifiedKFold
         
 from training.callbacks import CustomPrintCallback, CustomBestEarlyStopping
 
+
+MODE_MAPPING = {'loss': 'min', 'mean_euclidean_error': 'min', 'accuracy': 'max'}
+
+
 class Solver(object):
     """
     A Solver encapsulates all the logic necessary for training a classification/regression model.
@@ -44,17 +48,15 @@ class Solver(object):
         self.validation_data = None
         
         
-        if target == 'loss' or target == 'mean_euclidean_error':
-            self.mode = 'min'
-        elif target == 'accuracy':
-            self.mode = 'max'
-        else:
-            raise ValueError("Unknown <target> parameter, can only be 'loss', 'accuracy', or 'mean_euclidean_error'!")
-        
+        if target not in MODE_MAPPING:
+            raise ValueError(
+                "Unknown <target> parameter, can only be 'loss', 'accuracy', or 'mean_euclidean_error'!"
+            )
+        self.mode = MODE_MAPPING[target]
         self.target = target
         
-        if self.x_val is not None:
-            self.validation_data = (self.x_val, self.y_val)
+        
+        self.validation_data = None if x_val is None else (self.x_val, self.y_val)
         
         self._reset()
     
@@ -63,14 +65,13 @@ class Solver(object):
         Reset/Setup some book-keeping variables for optimization. Don't call this
         manually.
         """
-        # Set up some variables for book-keeping
+        # Setup/reset some variables for book-keeping
         self.best_model_stats = None
         self.best_params = None
 
         self.train_loss_history = []
         self.val_loss_history = []
         
-        # Record metric history
         self.train_metric_history = []
         self.val_metric_history = []
         
@@ -123,7 +124,8 @@ class Solver(object):
         callbacks = []
         
         if patience:
-            early_stopping = CustomBestEarlyStopping(monitor=f'val_{self.target}', patience=patience, mode=self.mode, verbose=1, restore_best_weights=True)
+            monitor = self.target if self.x_val is None else f'val_{self.target}'
+            early_stopping = CustomBestEarlyStopping(monitor=monitor, patience=patience, mode=self.mode, verbose=1, restore_best_weights=True)
             callbacks.append(early_stopping)
 
         history = self.model.fit(self.x_train, self.y_train,
@@ -156,4 +158,7 @@ class Solver(object):
                 f'val_{self.target}': self.val_metric_history[best_metric_idx]
             })
         
-        print(f"Best (val) {self.target}: {self.best_model_stats[f'val_{self.target}']}")
+        if self.x_val is not None:
+            print(f"Best validation {self.target}: {self.best_model_stats[f'val_{self.target}']}")
+        else:
+            print(f"Best {self.target}: {self.best_model_stats[self.target]}")
