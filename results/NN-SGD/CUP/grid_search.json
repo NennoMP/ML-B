@@ -5,5 +5,7 @@
     "activation": "tanh",
     "reg": 0.001,
     "momentum": 0.9,
-    "batch_size": 800
+    "batch_size": 32,
+    "mean_euclidean_error": 0.6581032395362854,
+    "std_dev": 0.05555254831943595
 }

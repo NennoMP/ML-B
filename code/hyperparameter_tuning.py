@@ -12,7 +12,7 @@ from training.solver import Solver
 ALLOWED_RANDOM_SEARCH_PARAMS = ['log', 'int', 'float', 'item']
 
 
-def findBestConfig(model_fn, train_data, val_data, configs, target, n_splits, epochs, patience):
+def findBestConfig(model_fn, x_dev, y_dev, configs, target, n_splits, epochs, patience):
     """
     Trains a model using K-Fold cross-validation for a set of configurations
     and returns the best model based on the mean performance across folds.
@@ -20,8 +20,8 @@ def findBestConfig(model_fn, train_data, val_data, configs, target, n_splits, ep
     Required arguments:
         - model_fn: a function returning a model object
 
-        - train_data: training data pairs (samples, labels)
-        - val_data: validation data pairs (samples, labels)
+        - x_dev: development data
+        - y_dev: development labels
             
         - configs: a set of hparams configurations to test
     
@@ -44,10 +44,6 @@ def findBestConfig(model_fn, train_data, val_data, configs, target, n_splits, ep
     std_dev = None
     best_model = None
     results = []
-   
-    # Merge training and validation data
-    x_dev = np.concatenate((train_data[0], val_data[0]), axis=0)
-    y_dev = np.concatenate((train_data[1], val_data[1]), axis=0)
 
     kf = KFold(n_splits=n_splits, shuffle=True, random_state=128)
     for i in range(len(configs)):
@@ -89,7 +85,7 @@ def findBestConfig(model_fn, train_data, val_data, configs, target, n_splits, ep
 ######################################
 # GRID SEARCH
 ######################################
-def grid_search(model_fn, train_data, val_data,
+def grid_search(model_fn, x_dev, y_dev,
     grid_search_spaces, target, N_SPLITS=5, EPOCHS=100, PATIENCE=50):
     """
     A simple grid search based on nested loops to tune learning rate and
@@ -100,8 +96,8 @@ def grid_search(model_fn, train_data, val_data,
     Required arguments:
         - model_fn: a function returning a model object
 
-        - train_data: training data (samples, labels)
-        - val_data: validation data (samples, labels)
+        - x_dev: development data
+        - y_dev: development labels
             
         - grid_search_spaces: a dictionary where every key corresponds to a
             to-tune-hyperparameter and every value contains an interval of 
@@ -119,7 +115,7 @@ def grid_search(model_fn, train_data, val_data,
     for instance in product(*grid_search_spaces.values()):
         configs.append(dict(zip(grid_search_spaces.keys(), instance)))
 
-    return findBestConfig(model_fn, train_data, val_data,
+    return findBestConfig(model_fn, x_dev, y_dev,
                           configs, target, N_SPLITS, EPOCHS, PATIENCE)
 
 def tuning_search_top_configs(results, top=5):
@@ -190,7 +186,7 @@ def sample_hparams_spaces(search_spaces, trial=None):
 
     return config
 
-def random_search(model_fn, train_data, val_data, 
+def random_search(model_fn, x_dev, y_dev,
                   random_search_spaces, target, 
                   N_SPLITS=5, NUM_SEARCH=20, EPOCHS=30, PATIENCE=5):
     """
@@ -200,8 +196,8 @@ def random_search(model_fn, train_data, val_data,
     Required arguments:
         - model_fn: a function returning a model object
 
-        - train_data: training data (samples, labels)
-        - val_data: validation data (samples, labels)
+        - x_dev: development data
+        - y_dev: development labels
             
         - random_search_spaces: a dictionary where every key corresponds to a
             to-tune-hyperparameter and every value contains an interval of possible values to test.
@@ -218,4 +214,4 @@ def random_search(model_fn, train_data, val_data,
     for _ in range(NUM_SEARCH):
         configs.append(sample_hparams_spaces(random_search_spaces))
 
-    return findBestConfig(model_fn, train_data, val_data, configs, target, N_SPLITS, EPOCHS, PATIENCE)
+    return findBestConfig(model_fn, x_dev, y_dev, configs, target, N_SPLITS, EPOCHS, PATIENCE)

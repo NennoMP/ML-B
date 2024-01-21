@@ -1,0 +1,11 @@
+{
+    "lr": 0.00035,
+    "n_layers": 3,
+    "h_dim": 100,
+    "activation": "tanh",
+    "reg": 0.001,
+    "momentum": 0.95,
+    "batch_size": 32,
+    "mean_euclidean_error": 0.5947360396385193 ,
+    "std_dev": 0.02861759170109155
+}

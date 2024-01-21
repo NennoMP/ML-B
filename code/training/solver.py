@@ -76,15 +76,15 @@ class Solver(object):
         self.val_metric_history = []
         
     def plot_history(self, out_path: str):
-        epochs = list(range(2, len(self.train_loss_history) + 1))
+        epochs = list(range(3, len(self.train_loss_history) + 1))
 
         plt.figure(figsize=(12, 5))
 
         # Plotting MSE losses
         ax1 = plt.subplot(1, 2, 1)  # 1 row, 2 columns, 1st subplot = Losses
         ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
-        ax1.plot(epochs, self.train_loss_history[1:], label='Training', linestyle='--')
-        ax1.plot(epochs, self.val_loss_history[1:], label='Validation', linestyle='--')
+        ax1.plot(epochs, self.train_loss_history[2:], label='Training', linestyle='--')
+        ax1.plot(epochs, self.val_loss_history[2:], label='Internal test', linestyle='--')
         ax1.set_xlabel('Epoch')
         ax1.set_ylabel('MSE')
         ax1.legend()
@@ -95,8 +95,8 @@ class Solver(object):
         # Plotting metric (MEE)
         ax2 = plt.subplot(1, 2, 2)  # 1 row, 2 columns, 2nd subplot = metric
         ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
-        ax2.plot(epochs, self.train_metric_history[1:], label='Trainining', linestyle='--')
-        ax2.plot(epochs, self.val_metric_history[1:], label='Validation', linestyle='--')
+        ax2.plot(epochs, self.train_metric_history[2:], label='Training', linestyle='--')
+        ax2.plot(epochs, self.val_metric_history[2:], label='Internal test', linestyle='--')
         ax2.set_xlabel('Epoch')
         ax2.set_ylabel('MEE')
         ax2.legend()
