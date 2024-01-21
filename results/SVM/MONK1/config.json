@@ -5,7 +5,7 @@
     "class_weight": null,
     "coef0": 0.0,
     "decision_function_shape": "ovr",
-    "degree": 3,
+    "degree": 2,
     "gamma": "scale",
     "kernel": "poly",
     "max_iter": -1,
