@@ -1,6 +1,6 @@
 {
-    "C": 237.6392365545739,
-    "epsilon": 0.08621817770351486,
-    "gamma": "scale",
-    "kernel": "rbf"
+    "C": 2000,
+    "epsilon": 0.07,
+    "kernel": "rbf",
+    "gamma": "scale"
 }
