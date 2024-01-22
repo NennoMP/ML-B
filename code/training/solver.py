@@ -6,9 +6,9 @@ from keras.losses import BinaryCrossentropy
 from sklearn.ensemble import AdaBoostClassifier
 from sklearn.model_selection import StratifiedKFold                 
         
-from training.callbacks import CustomPrintCallback, CustomBestEarlyStopping
+from training.callbacks import CustomBestEarlyStopping
 
-
+# Optimization direction based on target metric
 MODE_MAPPING = {'loss': 'min', 'mean_euclidean_error': 'min', 'accuracy': 'max'}
 
 
@@ -18,12 +18,12 @@ class Solver(object):
     It performs gradient descent using the given learning rate.
 
     The solver accepts both training and validataion data and labels so it can
-    periodically check classification accuracy on both training and validation
+    periodically check classification/regression metric on both training and validation
     data to watch out for overfitting.
 
     After training (i.e. when train() method returns), the best performing weights are loaded back into
     the model, and the best achieved stats are stored in best_model_stats. History records for train loss,
-    val loss, train accuracy, and val accuracy are also memorized.
+    val loss, train metric, and val metric are also memorized.
     """
     
     def __init__(self, model: any, x_train: np.ndarray, y_train: np.ndarray, x_val=None, y_val=None, target='accuracy', **kwargs):
@@ -34,10 +34,12 @@ class Solver(object):
         - model: a model object
 
         - x_train: training data
-        - y_train: training gtc labels
+        - y_train: training ground-truth labels
         
+        Optional:
         - x_val: validation data
-        - y_val: validation gtc labels
+        - y_val: validation ground-truth labels
+        - target: metric to guide early-stopping
         """
         
         self.model = model
@@ -76,6 +78,12 @@ class Solver(object):
         self.val_metric_history = []
         
     def plot_history(self, out_path: str):
+        """Plot learning curves for the model.
+
+        Args:
+        - out_path: output path to save the plots
+        """
+        
         epochs = list(range(3, len(self.train_loss_history) + 1))
 
         plt.figure(figsize=(12, 5))
@@ -84,7 +92,7 @@ class Solver(object):
         ax1 = plt.subplot(1, 2, 1)  # 1 row, 2 columns, 1st subplot = Losses
         ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
         ax1.plot(epochs, self.train_loss_history[2:], label='Training', linestyle='--')
-        ax1.plot(epochs, self.val_loss_history[2:], label='Internal test', linestyle='--')
+        ax1.plot(epochs, self.val_loss_history[2:], label='Test', linestyle='--')
         ax1.set_xlabel('Epoch')
         ax1.set_ylabel('MSE')
         ax1.legend()
@@ -92,11 +100,11 @@ class Solver(object):
         ax1.spines['right'].set_visible(False)
         ax1.grid(True, which='both', linestyle='--', linewidth=0.5)
         
-        # Plotting metric (MEE)
+        # Plotting metric (Accuracy/MEE)
         ax2 = plt.subplot(1, 2, 2)  # 1 row, 2 columns, 2nd subplot = metric
         ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
         ax2.plot(epochs, self.train_metric_history[2:], label='Training', linestyle='--')
-        ax2.plot(epochs, self.val_metric_history[2:], label='Internal test', linestyle='--')
+        ax2.plot(epochs, self.val_metric_history[2:], label='Test', linestyle='--')
         ax2.set_xlabel('Epoch')
         ax2.set_ylabel('MEE')
         ax2.legend()
@@ -112,22 +120,21 @@ class Solver(object):
         """
         Run optimization to train the model.
         
-        Args:
+        Optional:
             epochs: number of epochs for training
             batch_size: size of the batch
-            
-        Optional:
-            patience: nummber of epochs to wait for improvement before stopping
+            patience: nummber of epochs to wait for improvement before early-stopping
         """
     
-            
-        callbacks = []
         
+        # Set Early-stopping
+        callbacks = []
         if patience:
             monitor = self.target if self.x_val is None else f'val_{self.target}'
             early_stopping = CustomBestEarlyStopping(monitor=monitor, patience=patience, mode=self.mode, verbose=1, restore_best_weights=True)
             callbacks.append(early_stopping)
 
+        # Train
         history = self.model.fit(self.x_train, self.y_train,
                                  validation_data=self.validation_data,
                                  epochs=epochs, batch_size=batch_size, callbacks=callbacks, shuffle=True, verbose=1)

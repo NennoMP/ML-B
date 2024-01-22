@@ -1,18 +1,4 @@
-from keras.callbacks import EarlyStopping, Callback
-
-
-class CustomPrintCallback(Callback):
-    """Custom Callback printing useful metrics-related information for each epoch."""
-    
-    def __init__(self, epochs):
-        super().__init__()
-        self.epochs = epochs
-    
-    def on_epoch_end(self, epoch, logs=None):
-        if 'val_accuracy' in logs:
-            print(f"\nEpoch {epoch+1}/{self.epochs} - loss: {logs['loss']:.4f} - accuracy: {logs['accuracy']:.4f} - val_loss: {logs['val_loss']:.4f} - val_accuracy: {logs['val_accuracy']:.4f}\n")
-        else:
-            print(f"\nEpoch {epoch+1}/{self.epochs} - loss: {logs['loss']:.4f} - accuracy: {logs['accuracy']:.4f}\n")
+from keras.callbacks import EarlyStopping
 
 
 class CustomBestEarlyStopping(EarlyStopping):
