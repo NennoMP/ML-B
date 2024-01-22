@@ -77,7 +77,7 @@ class Solver(object):
         self.train_metric_history = []
         self.val_metric_history = []
         
-    def plot_history(self, out_path: str):
+    def plot_history(self, out_path: str, loss, metric):
         """Plot learning curves for the model.
 
         Args:
@@ -91,10 +91,10 @@ class Solver(object):
         # Plotting MSE losses
         ax1 = plt.subplot(1, 2, 1)  # 1 row, 2 columns, 1st subplot = Losses
         ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
-        ax1.plot(epochs, self.train_loss_history[2:], label='Training', linestyle='--')
+        ax1.plot(epochs, self.train_loss_history[2:], label='Training', linestyle='-')
         ax1.plot(epochs, self.val_loss_history[2:], label='Test', linestyle='--')
         ax1.set_xlabel('Epoch')
-        ax1.set_ylabel('MSE')
+        ax1.set_ylabel(loss)
         ax1.legend()
         ax1.spines['top'].set_visible(False)
         ax1.spines['right'].set_visible(False)
@@ -103,10 +103,10 @@ class Solver(object):
         # Plotting metric (Accuracy/MEE)
         ax2 = plt.subplot(1, 2, 2)  # 1 row, 2 columns, 2nd subplot = metric
         ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
-        ax2.plot(epochs, self.train_metric_history[2:], label='Training', linestyle='--')
+        ax2.plot(epochs, self.train_metric_history[2:], label='Training', linestyle='-')
         ax2.plot(epochs, self.val_metric_history[2:], label='Test', linestyle='--')
         ax2.set_xlabel('Epoch')
-        ax2.set_ylabel('MEE')
+        ax2.set_ylabel(metric)
         ax2.legend()
         ax2.spines['top'].set_visible(False)
         ax2.spines['right'].set_visible(False)
@@ -116,7 +116,7 @@ class Solver(object):
         plt.savefig(out_path, dpi=300, bbox_inches='tight')
         plt.show()
 
-    def train(self, epochs=50, batch_size=32, patience=None):
+    def train(self, epochs=50, batch_size=32, patience=None, lr_scheduler=None):
         """
         Run optimization to train the model.
         
@@ -124,11 +124,16 @@ class Solver(object):
             epochs: number of epochs for training
             batch_size: size of the batch
             patience: nummber of epochs to wait for improvement before early-stopping
+            lr_scheduler: a custom callback for warm-up learning rate
         """
     
+        callbacks = []
+    
+        # Set learning rate scheduler
+        if lr_scheduler is not None:
+            callbacks.append(lr_scheduler)
         
         # Set Early-stopping
-        callbacks = []
         if patience:
             monitor = self.target if self.x_val is None else f'val_{self.target}'
             early_stopping = CustomBestEarlyStopping(monitor=monitor, patience=patience, mode=self.mode, verbose=1, restore_best_weights=True)
