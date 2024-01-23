@@ -91,8 +91,8 @@ class Solver(object):
         # Plotting MSE losses
         ax1 = plt.subplot(1, 2, 1)  # 1 row, 2 columns, 1st subplot = Losses
         ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
-        ax1.plot(epochs, self.train_loss_history[2:], label='Training', linestyle='-')
-        ax1.plot(epochs, self.val_loss_history[2:], label='Test', linestyle='--')
+        ax1.plot(epochs, self.train_loss_history[2:], label='Training', linestyle=':')
+        ax1.plot(epochs, self.val_loss_history[2:], label='Test', linestyle='-',  linewidth=1)
         ax1.set_xlabel('Epoch')
         ax1.set_ylabel(loss)
         ax1.legend()
@@ -103,8 +103,8 @@ class Solver(object):
         # Plotting metric (Accuracy/MEE)
         ax2 = plt.subplot(1, 2, 2)  # 1 row, 2 columns, 2nd subplot = metric
         ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
-        ax2.plot(epochs, self.train_metric_history[2:], label='Training', linestyle='-')
-        ax2.plot(epochs, self.val_metric_history[2:], label='Test', linestyle='--')
+        ax2.plot(epochs, self.train_metric_history[2:], label='Training', linestyle=':')
+        ax2.plot(epochs, self.val_metric_history[2:], label='Test', linestyle='-', linewidth=1)
         ax2.set_xlabel('Epoch')
         ax2.set_ylabel(metric)
         ax2.legend()
@@ -149,8 +149,8 @@ class Solver(object):
         self.val_loss_history = history.history.get('val_loss', [])
         
         # Record metric history
-        self.train_metric_history = history.history[self.target]
-        self.val_metric_history = history.history.get(f'val_{self.target}', [])
+        self.train_metric_history = history.history[self.model.metrics_names[1]]
+        self.val_metric_history = history.history.get(f'val_{self.model.metrics_names[1]}', [])
         
         
         if self.x_val is None:
@@ -161,13 +161,13 @@ class Solver(object):
         
         self.best_model_stats = {
             'loss': self.train_loss_history[best_metric_idx],
-            self.target: self.train_metric_history[best_metric_idx]
+            self.model.metrics_names[1]: self.train_metric_history[best_metric_idx]
         }
 
         if self.x_val is not None:
             self.best_model_stats.update({
                 'val_loss': self.val_loss_history[best_metric_idx],
-                f'val_{self.target}': self.val_metric_history[best_metric_idx]
+                f'val_{self.model.metrics_names[1]}': self.val_metric_history[best_metric_idx]
             })
         
         if self.x_val is not None:
