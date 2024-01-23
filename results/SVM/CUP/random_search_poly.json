@@ -1,0 +1,9 @@
+{
+    "C": 2000,
+    "epsilon": 0.07,
+    "kernel": "rbf",
+    "gamma": "scale",
+	"poly_degree": 3,
+    "mean_euclidean_error": 0.4952,
+    "std_dev": 0.0376
+}

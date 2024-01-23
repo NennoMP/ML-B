@@ -103,7 +103,7 @@ def load_cup(dev_path: str, test_path: str) -> tuple[np.ndarray, np.ndarray, np.
 
 
 
-def store_cup_result(out_dir: str, config: dict, report: dict, blind_test_preds: np.ndarray):
+def store_cup_result(out_dir: str, config: dict, report: dict, blind_test_preds: np.ndarray, is_poly=False):
     """
     Utility function to store the final results (i.e., best configurations and test performance)
     of a model w.r.t. CUP.
@@ -119,16 +119,21 @@ def store_cup_result(out_dir: str, config: dict, report: dict, blind_test_preds:
     # Check if the directory exists, create it if not
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
+    
+    poly = ''
+    # Check if it's a PolynomialFeatures result or not
+    if is_poly:
+        poly = '_poly'
         
     # Writing best_config to a file
-    with open(out_dir + 'config.json', 'w') as outf:
+    with open(out_dir + f'config{poly}.json', 'w') as outf:
         json.dump(config, outf, indent=4)
 
     # Writing train-val-internal test report
-    with open(out_dir + 'report.json', 'w') as outf:
+    with open(out_dir + f'report{poly}.json', 'w') as outf:
         json.dump(report, outf, indent=4)
             
-    with open(out_dir + 'test_preds.csv', 'w') as outf:
+    with open(out_dir + f'test_preds{poly}.csv', 'w') as outf:
         # Team Info
         outf.write("# Matteo Pinna, Leonardo Caridi, Marco Sanna\n")
         outf.write("# ACD-TEAM\n")
