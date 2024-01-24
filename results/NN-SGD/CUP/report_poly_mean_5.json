@@ -1,0 +1,14 @@
+{
+    "dev": {
+        "mean_mse": 0.6995,
+		"std_dev_mse": 0.03647,
+        "mean_mee": 0.2435,
+		"std_dev_mee": 0.02152,
+    },
+    "test": {
+        "mean_mse": 0.8080,
+		"std_dev_mse":  0.05335,
+        "mean_mee": 0.4442,
+		"std_dev_mee": 0.02975,
+    }
+}
