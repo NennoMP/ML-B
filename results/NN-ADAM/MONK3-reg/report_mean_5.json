@@ -1,0 +1,14 @@
+{
+    "dev": {
+        "mean_accuracy": 0.9344,
+		"std_dev_accuracy": 0.0,
+        "mean_mse": 0.1023,
+		"std_dev_mse": 0.01333,
+    },
+    "test": {
+        "mean_accuracy": 0.97328,
+		"std_dev_accuracy": 0.00216,
+        "mean_mse": 0.06428,
+		"std_dev_mse": 0.01935,
+    }
+}

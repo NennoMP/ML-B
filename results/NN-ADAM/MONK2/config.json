@@ -1,7 +1,8 @@
 {
-    "lr": 0.3,
+    "lr": 0.09,
     "h_dim": 4,
+	"activation": "ReLU",
     "reg": 0,
     "beta_1": 0.9,
-    "beta_2": 0.9
+    "beta_2": 0.99
 }
