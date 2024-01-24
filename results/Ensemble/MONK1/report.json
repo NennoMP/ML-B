@@ -1,0 +1,26 @@
+{
+    "dev_majority": {
+        "accuracy": 1.0,
+        "mse": 0.0
+    },
+    "test_majority": {
+        "accuracy": 1.0,
+        "mse": 0.0
+    },
+    "dev_weighted": {
+        "accuracy": 1.0,
+        "mse": 0.0
+    },
+    "test_weighted": {
+        "accuracy": 1.0,
+        "mse": 0.0
+    },
+    "dev_stacking": {
+        "accuracy": 1.0,
+        "mse": 0.0
+    },
+    "test_stacking": {
+        "accuracy": 1.0,
+        "mse": 0.0
+    }
+}
