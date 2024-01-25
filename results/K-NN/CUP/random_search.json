@@ -1,0 +1,7 @@
+{
+    "n_neighbors": 4,
+    "p": 1,
+    "weights": "distance"
+	"mean_mee": 2.6174,
+	"std_dev_mee": 0.1620,
+}

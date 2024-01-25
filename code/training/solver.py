@@ -52,7 +52,7 @@ class Solver(object):
         
         if target not in MODE_MAPPING:
             raise ValueError(
-                "Unknown <target> parameter, can only be 'loss', 'accuracy', or 'mean_euclidean_error'!"
+                "Unknown <target> parameter, can only be 'loss/val_loss', 'accuracy/val_accuracy', or 'mean_euclidean_error/val_mean_euclidean_error'!"
             )
         self.mode = MODE_MAPPING[target]
         self.target = target
@@ -135,8 +135,8 @@ class Solver(object):
         
         # Set Early-stopping
         if patience:
-            monitor = self.target if self.x_val is None else f'val_{self.target}'
-            early_stopping = CustomBestEarlyStopping(monitor=monitor, patience=patience, mode=self.mode, verbose=1, restore_best_weights=True)
+            #monitor = self.target if self.x_val is None else f'val_{self.target}'
+            early_stopping = CustomBestEarlyStopping(monitor=self.target, patience=patience, mode=self.mode, verbose=1, restore_best_weights=True)
             callbacks.append(early_stopping)
 
         # Train
@@ -163,6 +163,7 @@ class Solver(object):
             'loss': self.train_loss_history[best_metric_idx],
             self.model.metrics_names[1]: self.train_metric_history[best_metric_idx]
         }
+        print(self.model.metrics_names[1])
 
         if self.x_val is not None:
             self.best_model_stats.update({
@@ -170,7 +171,4 @@ class Solver(object):
                 f'val_{self.model.metrics_names[1]}': self.val_metric_history[best_metric_idx]
             })
         
-        if self.x_val is not None:
-            print(f"Best validation {self.target}: {self.best_model_stats[f'val_{self.target}']}")
-        else:
-            print(f"Best {self.target}: {self.best_model_stats[self.target]}")
+        print(f"Best {self.target}: {self.best_model_stats[self.target]}")

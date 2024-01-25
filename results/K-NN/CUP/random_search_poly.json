@@ -1,0 +1,8 @@
+{
+    "n_neighbors": 4,
+    "p": 1,
+    "weights": "distance",
+	"poly_degree": 3
+	"mean_mee": 2.5934,
+	"std_dev_mee": 0.1666,
+}

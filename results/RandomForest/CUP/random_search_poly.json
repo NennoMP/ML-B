@@ -1,0 +1,12 @@
+{
+    "bootstrap": "False",
+    "criterion": "squared_error",
+    "max_depth": 20,
+    "max_features": "sqrt",
+	"min_samples_leaf": 1,
+	"min_samples_split": 3,
+	"n_estimators": 232,
+	"poly_degree": 3,
+    "mean_euclidean_error": 2.4241,
+    "std_dev": 0.1966
+}

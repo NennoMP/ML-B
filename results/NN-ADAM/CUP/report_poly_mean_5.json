@@ -1,14 +1,14 @@
 {
-    "dev": {
-        "mean_mse": 0.6342,
-		"std_dev_mse": 0.04887,
-        "mean_mee": 0.2867,
-		"std_dev_mee": 0.02376,
+    "train": {
+        "mean_mse": 0.8001258373260498,
+		"std_dev_mse": 0.04272177006693596,
+        "mean_mee": 0.2977380990982056,
+		"std_dev_mee": 0.017748538215278973,
     },
-    "test": {
-        "mean_mse": 0.8750,
-		"std_dev_mse":  0.06522,
-        "mean_mee": 0.5550,
-		"std_dev_mee": 0.04453,
+    "internal_test": {
+        "mean_mse": 1.080514395236969,
+		"std_dev_mee": 0.10718048434835323,
+        "mean_mee": 0.6646737933158875,
+		"std_dev_mee": 0.03778202945744637
     }
 }
