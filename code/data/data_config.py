@@ -1,3 +1,9 @@
+"""
+data_config.py
+
+@description: Enum helper to store datasets' filepaths across multiple notebooks.
+"""
+
 import os
 import sys
 

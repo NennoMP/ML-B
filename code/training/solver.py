@@ -1,3 +1,11 @@
+"""
+Solver.py
+
+@description: Solver class that implements the logic to train a neural network and plot 
+              its learnign curves.
+"""
+
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -31,15 +39,14 @@ class Solver(object):
         Construct a new Solver instance.
 
         Args:
-        - model: a model object
-
-        - x_train: training data
-        - y_train: training ground-truth labels
+            - model: a model object
+            - x_train: training data
+            - y_train: training ground-truth labels
         
         Optional:
-        - x_val: validation data
-        - y_val: validation ground-truth labels
-        - target: metric to guide early-stopping
+            - x_val: validation data
+            - y_val: validation ground-truth labels
+            - target: metric to guide early-stopping
         """
         
         self.model = model
@@ -77,18 +84,20 @@ class Solver(object):
         self.train_metric_history = []
         self.val_metric_history = []
         
-    def plot_history(self, out_path: str, loss, metric):
+    def plot_history(self, out_path: str, loss: str, metric: str):
         """Plot learning curves for the model.
 
         Args:
-        - out_path: output path to save the plots
+            - out_path: output path to save the plots
+            - loss: string title of y-axis (1st plot)
+            - metric: string title of y-axis (2nd plot)
         """
         
         epochs = list(range(3, len(self.train_loss_history) + 1))
 
         plt.figure(figsize=(12, 5))
 
-        # Plotting MSE losses
+        # Plotting MSE loss
         ax1 = plt.subplot(1, 2, 1)  # 1 row, 2 columns, 1st subplot = Losses
         ax1.xaxis.set_major_locator(MaxNLocator(integer=True))
         ax1.plot(epochs, self.train_loss_history[2:], label='Training', linestyle=':')
@@ -100,7 +109,7 @@ class Solver(object):
         ax1.spines['right'].set_visible(False)
         ax1.grid(True, which='both', linestyle='--', linewidth=0.5)
         
-        # Plotting metric (Accuracy/MEE)
+        # Plotting metric (Accuracy or MEE)
         ax2 = plt.subplot(1, 2, 2)  # 1 row, 2 columns, 2nd subplot = metric
         ax2.xaxis.set_major_locator(MaxNLocator(integer=True))
         ax2.plot(epochs, self.train_metric_history[2:], label='Training', linestyle=':')
@@ -118,13 +127,13 @@ class Solver(object):
 
     def train(self, epochs=50, batch_size=32, patience=None, lr_scheduler=None):
         """
-        Run optimization to train the model.
+        Train a model.
         
         Optional:
             epochs: number of epochs for training
             batch_size: size of the batch
-            patience: nummber of epochs to wait for improvement before early-stopping
-            lr_scheduler: a custom callback for warm-up learning rate
+            patience: number of epochs to wait for improvement before early-stopping.
+            lr_scheduler: a custom callback for warm-up learning rate.
         """
     
         callbacks = []
@@ -135,7 +144,6 @@ class Solver(object):
         
         # Set Early-stopping
         if patience:
-            #monitor = self.target if self.x_val is None else f'val_{self.target}'
             early_stopping = CustomBestEarlyStopping(monitor=self.target, patience=patience, mode=self.mode, verbose=1, restore_best_weights=True)
             callbacks.append(early_stopping)
 

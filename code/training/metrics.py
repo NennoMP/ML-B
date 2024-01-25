@@ -1,3 +1,9 @@
+"""
+metrics.py
+
+@description: Metrics for models evaluation.
+"""
+
 import numpy as np
 
 

@@ -1,3 +1,9 @@
+"""
+data_utils.py
+
+@description: Helpers to load the datasets in an appropriate format, and store their results.
+"""
+
 import json
 import os
 
@@ -5,9 +11,11 @@ import numpy as np
 import pandas as pd
 
 
+# MONK HEADER/FEATURES
 MONK_HEADER = ['class', 'a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'ID']
 MONK_ATTRIBUTES = ['a1', 'a2', 'a3', 'a4', 'a5', 'a6']
 
+# CUP FEATURES
 CUP_HEADER = ['ID','a1','a2','a3','a4','a5','a6', 'a7', 'a8', 'a9', 'a10', 'class_x', 'class_y', 'class_z']
 
 
@@ -16,11 +24,11 @@ CUP_HEADER = ['ID','a1','a2','a3','a4','a5','a6', 'a7', 'a8', 'a9', 'a10', 'clas
 ######################################
 def load_monk(dev_path: str, test_path: str) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
     """
-    Utility function to load a monk's problem train and test dataset. Returns the train and test
+    Utility function to load a MONK train and test dataset. Returns the train and test
     attributes (one-hot encoding) and labels.
     
-    Required arguments:
-        - dev_path: train data filepath
+    Args:
+        - dev_path: training data filepath
         - test_path: test data filepath
     """
     
@@ -47,10 +55,10 @@ def load_monk(dev_path: str, test_path: str) -> tuple[np.ndarray, np.ndarray, np
 
 def store_monk_result(out_dir: str, config: dict, report: dict):
     """
-    Utility function to store the final results (i.e., best configurations and test performance)
-    of a model w.r.t. a monk's problem.
+    Utility function to store the final results, i.e. best configuration and train/test 
+    performance, of a model w.r.t. a MONK problem.
     
-    Required arguments:
+    Args:
         - out_dir: output directory
         - config: hparams final configuration
         - report: loss and accuracy report for dev-test
@@ -74,12 +82,12 @@ def store_monk_result(out_dir: str, config: dict, report: dict):
 ######################################
 def load_cup(dev_path: str, test_path: str) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]: 
     """
-    Utility function to load CUP train and test dataset. Returns the train attributes and labels, 
-    and the test attributes.
+    Utility function to load CUP development and test dataset. Returns the development attributes and 
+    labels, as well as the blind test labels.
     
-    Required arguments:
+    Args:
         - dev_path: train data filepath
-        - test_path: test data filepath
+        - test_path: blind test data filepath
     """
     
     # Load the data
@@ -102,18 +110,19 @@ def load_cup(dev_path: str, test_path: str) -> tuple[np.ndarray, np.ndarray, np.
     return x_dev, y_dev, x_test
 
 
-
 def store_cup_result(out_dir: str, config: dict, report: dict, blind_test_preds: np.ndarray, is_poly=False):
     """
-    Utility function to store the final results (i.e., best configurations and test performance)
-    of a model w.r.t. CUP.
+    Utility function to store the final results - i.e. best configuration, train-val-internal test performance
+    and the blind test predictions - of a model w.r.t. CUP.
     
-    Required arguments:
-        Required arguments:
+    Args:
         - out_dir: output directory
-        - config: hparams final configuration
+        - config: final model hyper-parameters
         - report: MSE and MEE report for train-val-internal test
         - blind_test_preds: predictions for the blind test
+    
+    Optional:
+        - is_poly: specifies if these are polynomial pre-processing results. Defaults to False
     """
     
     # Check if the directory exists, create it if not

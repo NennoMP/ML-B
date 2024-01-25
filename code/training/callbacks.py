@@ -1,8 +1,17 @@
+"""
+callbacks.py
+
+@description: Custom callbacks for model training.
+"""
+
+
 from keras.callbacks import EarlyStopping
 
 
 class CustomBestEarlyStopping(EarlyStopping):
-    """Custom EarlyStopping to restore best model weights on train end."""
+    """
+    Custom EarlyStopping callback for custom prints and
+    and to restore best epoch weights on train end."""
     
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
