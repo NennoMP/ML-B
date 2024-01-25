@@ -3,7 +3,7 @@ import tensorflow as tf
 from training.solver import Solver
 
 
-def averange_prediction_nn(estimator, params, N_epochs, x_dev, x_test, y_dev, y_test, k, x_blind_test=None, optimizer=None):
+def averange_prediction_nn(estimator, params, N_epochs, x_dev, x_test, y_dev, y_test, k, x_blind_test=None):
 
     prediction_dev = []
     prediction_test = []
@@ -18,8 +18,7 @@ def averange_prediction_nn(estimator, params, N_epochs, x_dev, x_test, y_dev, y_
         acc_test = [] 
 
     for i in range(k):
-        if(optimizer is None): model = estimator(params)
-        else: model = estimator(optimizer, params)
+        model = estimator(params)
         
         if(x_blind_test is not None): # CUP
             solver = Solver(model, x_dev, y_dev, x_test, y_test, target='mean_euclidean_error')
