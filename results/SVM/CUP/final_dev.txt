@@ -1,0 +1,2 @@
+-- DEVELOPMENT --
+Mean Loss (MSE): 0.0045 - Mean MEE: 0.1107

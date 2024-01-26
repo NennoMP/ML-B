@@ -1,0 +1,2 @@
+-- DEVELOPMENT (MEAN 5 TRIALS) --
+Mean Loss (MSE): 0.0261 - Mean MEE: 0.2163

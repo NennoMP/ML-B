@@ -17,7 +17,7 @@ from sklearn.model_selection import StratifiedKFold
 from training.callbacks import CustomBestEarlyStopping
 
 # Optimization direction based on target metric
-MODE_MAPPING = {'loss': 'min', 'mean_euclidean_error': 'min', 'accuracy': 'max'}
+MODE_MAPPING = {'loss': 'min', 'val_loss': 'min', 'mean_euclidean_error': 'min', 'accuracy': 'max', 'val_mean_euclidean_error': 'min', 'val_accuracy': 'max'}
 
 
 class Solver(object):
@@ -55,7 +55,6 @@ class Solver(object):
         self.x_val = x_val
         self.y_val = y_val
         self.validation_data = None
-        
         
         if target not in MODE_MAPPING:
             raise ValueError(
