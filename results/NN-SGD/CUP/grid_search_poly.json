@@ -7,6 +7,6 @@
     "momentum": 0.9,
     "batch_size": 32,
 	"poly_degree": 3,
-    "mean_euclidean_error": 0.5122195184230804,
-    "std_dev": 0.04828427314371781
+    "mean_euclidean_error": 0.5297813057899475 ,
+    "std_dev": 0.038425913782441125
 }

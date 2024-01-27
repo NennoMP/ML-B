@@ -17,7 +17,7 @@ from sklearn.model_selection import StratifiedKFold
 from training.callbacks import CustomBestEarlyStopping
 
 # Optimization direction based on target metric
-MODE_MAPPING = {'loss': 'min', 'val_loss': 'min', 'mean_euclidean_error': 'min', 'accuracy': 'max', 'val_mean_euclidean_error': 'min', 'val_accuracy': 'max'}
+MODE_MAPPING = {'loss': 'min', 'mean_euclidean_error': 'min', 'accuracy': 'max'}
 
 
 class Solver(object):
@@ -56,11 +56,11 @@ class Solver(object):
         self.y_val = y_val
         self.validation_data = None
         
-        if target not in MODE_MAPPING:
+        if target.replace('val_', '') not in MODE_MAPPING:
             raise ValueError(
                 "Unknown <target> parameter, can only be 'loss/val_loss', 'accuracy/val_accuracy', or 'mean_euclidean_error/val_mean_euclidean_error'!"
             )
-        self.mode = MODE_MAPPING[target]
+        self.mode = MODE_MAPPING[target.replace('val_', '')]
         self.target = target
         
         
@@ -160,12 +160,19 @@ class Solver(object):
         self.val_metric_history = history.history.get(f'val_{self.model.metrics_names[1]}', [])
         
         
+        # Retrieve <self.target> best result index
         if self.x_val is None:
-            best_metric_idx = np.argmax(self.train_metric_history) if self.mode == 'max' else np.argmin(self.train_metric_history)
+            if self.target == 'loss':
+                best_metric_idx = np.argmin(self.train_loss_history)
+            else:
+                best_metric_idx = np.argmax(self.train_metric_history) if self.mode == 'max' else np.argmin(self.train_metric_history)
         else:
-            best_metric_idx = np.argmax(self.val_metric_history) if self.mode == 'max' else np.argmin(self.val_metric_history)
-            
-        
+            if self.target == 'val_loss':
+                best_metric_idx = np.argmin(self.val_loss_history)
+            else:
+                best_metric_idx = np.argmax(self.val_metric_history) if self.mode == 'max' else np.argmin(self.val_metric_history)
+
+              
         self.best_model_stats = {
             'loss': self.train_loss_history[best_metric_idx],
             self.model.metrics_names[1]: self.train_metric_history[best_metric_idx]

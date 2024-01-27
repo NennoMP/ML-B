@@ -21,7 +21,7 @@ ALLOWED_RANDOM_SEARCH_PARAMS = ['log', 'int', 'float', 'item']
 
 
 def findBestConfig(
-    model_fn, x_dev, y_dev, configs: dict, target: str, 
+    model_fn, in_dim: int, x_dev, y_dev, configs: dict, target: str, 
     n_splits: int, epochs: int, patience: int):
     """
     Trains a model using K-Fold cross-validation for a set of configurations
@@ -30,6 +30,7 @@ def findBestConfig(
     
     Args:
         - model_fn: a function that returns the model instance
+        - in_dim: input dimension
         - x_dev: development data
         - y_dev: development labels    
         - configs: a set of hparams configurations to test
@@ -40,14 +41,16 @@ def findBestConfig(
     """
     
     # Check if valid target metric
-    if target == 'loss' or target == 'mean_euclidean_error':
+    aux = target.replace('val_', '')
+    if aux == 'loss' or aux == 'mean_euclidean_error':
         mode = 'min'
         best_target = float('inf')
-    elif target == 'accuracy':
+    elif aux == 'accuracy':
         mode = 'max'
         best_target = float('-inf')
     else:
-        raise ValueError(f"Unsupported TARGET value: {target}. Try 'loss', 'accuracy' or 'mean_euclidean_error'!'")
+        raise ValueError(
+            f"Unsupported TARGET value: {target}. Try 'loss/val_loss', 'accuracy/val_accuracy' or 'mean_euclidean_error/val_mean_euclidean_error'!'")
    
     # Tracking variables
     best_config = None
@@ -73,11 +76,11 @@ def findBestConfig(
             fold_train_labels, fold_val_labels = y_dev[train_idx], y_dev[val_idx]
             
             # Train
-            model = model_fn(configs[i])
+            model = model_fn(configs[i], in_dim)
             solver = Solver(model, fold_train_data, fold_train_labels, fold_val_data, fold_val_labels, target, **configs[i])
             solver.train(epochs=epochs, patience=patience, batch_size=configs[i]['batch_size'])
             
-            fold_metrics.append(solver.best_model_stats[f'val_{target}'])
+            fold_metrics.append(solver.best_model_stats[target])
             fold_count += 1
 
         mean_metric = np.mean(fold_metrics) # mean
@@ -90,7 +93,7 @@ def findBestConfig(
             best_target, best_model, best_config = mean_metric, model, configs[i]
             best_config[target], best_config['std_dev'] = mean_metric, std_dev
 
-    print(f"\nSearch done. Best mean score {f'val_{target}'}: {best_target} - std dev: {std_dev}")
+    print(f"\nSearch done. Best mean score {target}: {best_target} - std dev: {std_dev}")
     print("Best Config:", best_config)
 
     return best_model, best_config, list(zip(configs, results))
@@ -99,7 +102,7 @@ def findBestConfig(
 ######################################
 # GRID SEARCH
 ######################################
-def grid_search(model_fn, x_dev, y_dev,
+def grid_search(model_fn, in_dim: int, x_dev, y_dev,
                 grid_search_spaces: dict, target: str, 
                 N_SPLITS=5, EPOCHS=100, PATIENCE=50):
     """
@@ -109,6 +112,7 @@ def grid_search(model_fn, x_dev, y_dev,
 
     Args:
         - model_fn: a function returning a model object
+        - in_dim: input dimension
         - x_dev: development data
         - y_dev: development labels
         - grid_search_spaces: a dictionary where every key corresponds to a
@@ -127,7 +131,7 @@ def grid_search(model_fn, x_dev, y_dev,
     for instance in product(*grid_search_spaces.values()):
         configs.append(dict(zip(grid_search_spaces.keys(), instance)))
 
-    return findBestConfig(model_fn, x_dev, y_dev,
+    return findBestConfig(model_fn, in_dim, x_dev, y_dev,
                           configs, target, N_SPLITS, EPOCHS, PATIENCE)
 
 
@@ -200,7 +204,7 @@ def sample_hparams_spaces(search_spaces: dict, trial=None):
 
     return config
 
-def random_search(model_fn, x_dev, y_dev,
+def random_search(model_fn, in_dim: int, x_dev, y_dev,
                   random_search_spaces, target, 
                   N_SPLITS=5, NUM_SEARCH=20, EPOCHS=30, PATIENCE=5):
     """
@@ -209,6 +213,7 @@ def random_search(model_fn, x_dev, y_dev,
     
     Args:
         - model_fn: a function returning a model object
+        - in_dim: input dimension
         - x_dev: development data
         - y_dev: development labels
         - random_search_spaces: a dictionary where every key corresponds to a
@@ -227,4 +232,4 @@ def random_search(model_fn, x_dev, y_dev,
     for _ in range(NUM_SEARCH):
         configs.append(sample_hparams_spaces(random_search_spaces))
 
-    return findBestConfig(model_fn, x_dev, y_dev, configs, target, N_SPLITS, EPOCHS, PATIENCE)
+    return findBestConfig(model_fn, in_dim, x_dev, y_dev, configs, target, N_SPLITS, EPOCHS, PATIENCE)
