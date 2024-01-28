@@ -1,14 +1,14 @@
 {
     "dev": {
-        "mean_accuracy": 0.9344,
-		"std_dev_accuracy": 0.0,
-        "mean_mse": 0.09176,
-		"std_dev_mse": 0.01007,
+        "mean_accuracy": 0.9606,
+		"std_dev_accuracy": 0.0033,
+        "mean_mse": 0.0368,
+		"std_dev_mse": 0.0035,
     },
     "test": {
-        "mean_accuracy": 0.9722,
-		"std_dev_accuracy": 0.0,
-        "mean_mse": 0.08402,
-		"std_dev_mse": 0.00926 ,
+        "mean_accuracy": 0.9556,
+		"std_dev_accuracy": 0.0096,
+        "mean_mse": 0.0364,
+		"std_dev_mse": 0.0086 ,
     }
 }
