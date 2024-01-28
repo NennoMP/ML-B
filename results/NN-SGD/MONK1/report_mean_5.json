@@ -2,13 +2,13 @@
     "dev": {
         "mean_accuracy": 1.0,
 		"std_dev_accuracy": 0.0,
-        "mean_mse": 0.01354,
-		"std_dev_mse": 0.00381,
+        "mean_mse": 0.00053,
+		"std_dev_mse": 0.000047,
     },
     "test": {
         "mean_accuracy": 1.0,
 		"std_dev_accuracy": 0.0,
-        "mean_mse": 0.02162,
-		"std_dev_mse": 0.00447,
+        "mean_mse": 0.00103,
+		"std_dev_mse": 0.00025,
     }
 }

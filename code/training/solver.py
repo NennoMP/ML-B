@@ -161,16 +161,14 @@ class Solver(object):
         
         
         # Retrieve <self.target> best result index
-        if self.x_val is None:
-            if self.target == 'loss':
-                best_metric_idx = np.argmin(self.train_loss_history)
-            else:
-                best_metric_idx = np.argmax(self.train_metric_history) if self.mode == 'max' else np.argmin(self.train_metric_history)
+        if self.target == 'loss':
+            best_metric_idx = np.argmin(self.train_loss_history)
+        elif self.target == 'val_loss':
+            best_metric_idx = np.argmin(self.val_loss_history)
+        elif 'val_' not in self.target:
+            best_metric_idx = np.argmax(self.train_metric_history) if self.mode == 'max' else np.argmin(self.train_metric_history)
         else:
-            if self.target == 'val_loss':
-                best_metric_idx = np.argmin(self.val_loss_history)
-            else:
-                best_metric_idx = np.argmax(self.val_metric_history) if self.mode == 'max' else np.argmin(self.val_metric_history)
+            best_metric_idx = np.argmax(self.val_metric_history) if self.mode == 'max' else np.argmin(self.val_metric_history)
 
               
         self.best_model_stats = {
