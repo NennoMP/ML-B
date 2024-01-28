@@ -1,8 +1,8 @@
 {
-    "lr": 0.5,
+    "lr": 0.01,
     "h_dim": 4,
 	"activation": "tanh",
-    "reg": 0.02,
+    "reg": 0.01,
     "beta_1": 0.9,
-    "beta_2": 0.99
+    "beta_2": 0.9
 }
