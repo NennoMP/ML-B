@@ -1,5 +1,5 @@
 {
-    "lr": 0.009,
+    "lr": 0.09,
     "h_dim": 4,
 	"activation": "ReLU",
     "reg": 0,

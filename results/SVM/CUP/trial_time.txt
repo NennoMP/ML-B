@@ -1,1 +1,2 @@
-Total training time: 21.8698 seconds
+AMD Ryzen 5 2600X 3.60 GHz 6-Core Processor
+15.98 (+- 0.099)
