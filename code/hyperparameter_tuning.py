@@ -179,6 +179,7 @@ def sample_hparams_spaces(search_spaces: dict, trial=None):
     """
     
     config = {}
+    # Check type of each interval
     for key, (values, mode) in search_spaces.items():
         if mode == "float":
             config[key] = (
@@ -229,6 +230,7 @@ def random_search(model_fn, in_dim: int, x_dev, y_dev,
     """
     
     configs = []
+    # Create random configurations to test, from values in given spaces
     for _ in range(NUM_SEARCH):
         configs.append(sample_hparams_spaces(random_search_spaces))
 
